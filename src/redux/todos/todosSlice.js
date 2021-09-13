@@ -1,20 +1,15 @@
-import { createSlice, nanoid  } from "@reduxjs/toolkit";
-
+import { createSlice, nanoid, createAsyncThunk  } from "@reduxjs/toolkit";
+import axios from "axios";
+export const getTodoAsync = createAsyncThunk('todos/getTodosAsync', async() => {
+  const res = await axios('https://613fa1f1e9d92a0017e177a6.mockapi.io/todo-api/v1/posts');
+  return res.data;
+})
 export const todosSlice = createSlice({
   name: "todos",
   initialState: {
-    items: [
-      {
-        id: 1,
-        title: "Learn React",
-        completed: true,
-      },
-      {
-        id: 2,
-        title: "Play Cs: Go",
-        completed: false,
-      },
-    ],
+    items: [],
+    isLoading: false,
+    error: null,
     activeFilter: "all",
   },
 
@@ -53,6 +48,21 @@ export const todosSlice = createSlice({
       state.items = filtered;
     },
   },
+  extraReducers: {
+    [getTodoAsync.pending]: (state, action) => {
+      state.isLoading = true;
+    },
+    [getTodoAsync.fulfilled]: (state, action) => {
+      state.items = action.payload;
+      state.isLoading = false;
+    },
+    [getTodoAsync.rejected]: (state, action) => {
+      state.isLoading = false;
+      state.error = action.error.message;
+
+
+    }
+  }
 });
 
 export const selectTodos = (state) => state.todos.items;
